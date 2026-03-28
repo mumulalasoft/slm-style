@@ -1,6 +1,6 @@
 import QtQuick
 import SlmStyle
-import Style as DSStyle
+import SlmStyle as DSStyle
 
 Item {
     id: control

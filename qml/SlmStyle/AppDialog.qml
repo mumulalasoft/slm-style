@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Templates as T
 import SlmStyle
-import Style as DSStyle
+import SlmStyle as DSStyle
 
 T.Dialog {
     id: control
