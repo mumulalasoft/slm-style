@@ -11,14 +11,14 @@ T.Dialog {
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                              contentHeight + topPadding + bottomPadding)
 
-    padding: Theme.metric("spacingLg")
-    spacing: Theme.metric("spacingSm")
+    padding: Theme.metric("spacingXl")
+    spacing: Theme.metric("spacingMd")
     font.family: Theme.fontFamilyUi
     font.pixelSize: Theme.fontSize("body")
 
     background: PopupSurface {
-        implicitWidth: 360
-        implicitHeight: 180
+        implicitWidth: 320
+        implicitHeight: 160
         popupRadius: Theme.radiusWindowAlt
         popupColor: Theme.color("surface")
         popupBorderColor: Theme.color("panelBorder")
@@ -28,7 +28,7 @@ T.Dialog {
 
     header: Item {
         visible: control.title && control.title.length > 0
-        implicitHeight: visible ? (Theme.metric("controlHeightLarge") + Theme.metric("spacingXs")) : 0
+        implicitHeight: visible ? (Theme.metric("controlHeightRegular") + Theme.metric("spacingXs")) : 0
 
         Label {
             anchors.left: parent.left
@@ -36,7 +36,7 @@ T.Dialog {
             anchors.top: parent.top
             anchors.leftMargin: Theme.metric("spacingLg")
             anchors.rightMargin: Theme.metric("spacingLg")
-            anchors.topMargin: Theme.metric("spacingSm")
+            anchors.topMargin: Theme.metric("spacingXs")
             text: control.title
             color: Theme.color("textPrimary")
             font.family: Theme.fontFamilyDisplay

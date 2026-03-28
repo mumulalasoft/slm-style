@@ -50,15 +50,17 @@ T.Button {
         if (control.effectiveDefaultAction) {
             return "transparent"
         }
-        return control.visualFocus ? Theme.color("focusRing")
-                                   : Theme.color("panelBorder")
+        if (control.hovered) {
+            return Theme.color("panelBorderStrong")
+        }
+        return control.visualFocus ? Theme.color("focusRing") : Theme.color("panelBorder")
     }
-    implicitWidth: Math.max(86, implicitContentWidth + leftPadding + rightPadding)
-    implicitHeight: Theme.metric("controlHeightLarge")
-    leftPadding: 14
-    rightPadding: 14
-    topPadding: 6
-    bottomPadding: 6
+    implicitWidth: Math.max(82, implicitContentWidth + leftPadding + rightPadding)
+    implicitHeight: Theme.metric("controlHeightRegular")
+    leftPadding: 12
+    rightPadding: 12
+    topPadding: 5
+    bottomPadding: 5
 
     contentItem: Text {
         text: control.text
@@ -71,18 +73,29 @@ T.Button {
     }
 
     background: Rectangle {
-        radius: Theme.radiusControlLarge
+        radius: Theme.radiusControl
         color: control.fillColor
         border.width: control.effectiveDefaultAction ? Theme.borderWidthNone : Theme.borderWidthThin
         border.color: control.strokeColor
         opacity: 1.0
 
         Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: Math.round(parent.height * 0.5)
+            radius: parent.radius
+            color: Qt.rgba(1, 1, 1, control.effectiveDefaultAction ? (Theme.darkMode ? 0.10 : 0.22) : (Theme.darkMode ? 0.04 : 0.12))
+            opacity: control.enabled ? 1.0 : 0.0
+            visible: control.enabled
+        }
+
+        Rectangle {
             anchors.fill: parent
-            anchors.margins: -2
-            radius: parent.radius + 2
+            anchors.margins: -1
+            radius: parent.radius + 1
             color: "transparent"
-            border.width: 2
+            border.width: 1
             border.color: Theme.color("focusRing")
             visible: control.visualFocus && control.enabled
         }
