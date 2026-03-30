@@ -20,29 +20,78 @@ QtObject {
         var c = Qt.color(userAccentColor)
         return c.valid ? c : Qt.color("#0a84ff")
     }
-    readonly property int transitionDuration: 260
+    // Safe mode / animation kill-switch — set by C++ before engine loads.
+    readonly property bool safeModeActive: (typeof SafeModeActive !== "undefined") ? !!SafeModeActive : false
+    readonly property bool animationsEnabled: {
+        var enabled = true
+        if (typeof AnimationsEnabled !== "undefined") enabled = !!AnimationsEnabled
+        if (safeModeActive) enabled = false
+        return enabled
+    }
+    // Animation quality mode: "full" | "reduced" | "minimal"
+    // Reads from UIPreferences when available so the setting is reactive at runtime.
+    readonly property string animationMode: {
+        if (typeof UIPreferences !== "undefined" && UIPreferences && UIPreferences.animationMode)
+            return UIPreferences.animationMode
+        return "full"
+    }
+    // Scale factor derived from animationMode.
+    // 0.0 when animations are disabled; fractions for reduced modes.
+    readonly property real _modeScale: {
+        if (!animationsEnabled) return 0.0
+        if (animationMode === "minimal") return 0.25
+        if (animationMode === "reduced") return 0.60
+        return 1.0
+    }
+
+    readonly property int transitionDuration: Math.max(1, Math.round(260 * _modeScale))
 
     // Motion tokens — use these instead of hardcoded duration/easing values.
     // Micro: icon swap, badge pulse, small opacity transitions.
-    readonly property int durationMicro: 90
+    readonly property int durationMicro: Math.max(1, Math.round(90 * _modeScale))
     // Short: hover state, chip scale, button press feedback.
-    readonly property int durationSm: 130
+    readonly property int durationSm: Math.max(1, Math.round(130 * _modeScale))
     // Medium: panel slide, dropdown open, popover appear.
-    readonly property int durationMd: 200
+    readonly property int durationMd: Math.max(1, Math.round(200 * _modeScale))
     // Large: overlay enter/exit, workspace transition.
-    readonly property int durationLg: 290
+    readonly property int durationLg: Math.max(1, Math.round(290 * _modeScale))
     // Extra-large: full-screen transitions, theme switch.
-    readonly property int durationXl: 380
+    readonly property int durationXl: Math.max(1, Math.round(380 * _modeScale))
+    // Canonical global timing tokens for state-driven transitions.
+    readonly property int durationFast: Math.max(1, Math.round(120 * _modeScale))
+    readonly property int durationNormal: Math.max(1, Math.round(220 * _modeScale))
+    readonly property int durationSlow: Math.max(1, Math.round(320 * _modeScale))
+    readonly property int durationWorkspace: Math.max(1, Math.round(400 * _modeScale))
 
     // Easing presets aligned with macOS HIG motion feel.
     // Standard: bi-directional transitions (e.g. card flip, panel resize).
     readonly property int easingStandard: Easing.InOutCubic
     // Decelerate: elements entering the screen (ease-out feel).
     readonly property int easingDecelerate: Easing.OutCubic
+    // Default motion profile — alias for easingDecelerate.
+    readonly property int easingDefault: Easing.OutCubic
+    // Light profile for subtle micro interactions.
+    readonly property int easingLight: Easing.OutQuad
     // Accelerate: elements leaving the screen (ease-in feel).
     readonly property int easingAccelerate: Easing.InCubic
     // Spring-like: interactive gesture settle / bounce.
     readonly property int easingSpring: Easing.OutBack
+
+    // Physics tokens — single source of truth for SpringAnimation parameters.
+    // gentle: soft notification/panel slide-ins with natural settle.
+    readonly property real physicsSpringGentle: 3.0
+    readonly property real physicsDampingGentle: 0.26
+    readonly property real physicsMassGentle: 1.0
+    // default: dock gap reflow and moderate interactive springs.
+    readonly property real physicsSpringDefault: 4.8
+    readonly property real physicsDampingDefault: 0.43
+    readonly property real physicsMassDefault: 0.55
+    // snappy: tight reorder markers and fast positional snapping.
+    readonly property real physicsSpringSnappy: 6.2
+    readonly property real physicsDampingSnappy: 0.55
+    readonly property real physicsMassSnappy: 0.48
+    // Shared settle threshold — prevents micro-oscillation at rest.
+    readonly property real physicsEpsilon: 0.5
     readonly property string fontFamilyUi: "Open Sans"
     readonly property string fontFamilyDisplay: "Open Sans"
     readonly property string fontFamilyMonospace: "SF Mono"
@@ -84,6 +133,10 @@ QtObject {
     readonly property int controlHeightLarge: 34
     readonly property int topBarHeight: 34
     readonly property int fileManagerToolbarHeight: 44
+    // Compact inline controls inside the file manager header (nav, view-mode, search panels).
+    readonly property int fileManagerControlHeight: 26
+    // Footer / status bar below the content area.
+    readonly property int fileManagerStatusBarHeight: 30
     readonly property int popupWidthS: 288
     readonly property int popupWidthM: 320
     readonly property int popupWidthL: 360
@@ -173,6 +226,14 @@ QtObject {
     readonly property var shadowXl: ({
         radius: 48, horizontalOffset: 0, verticalOffset: 14, opacity: 0.28, spread: 2
     })
+
+    // Elevation semantic aliases — map usage level to shadow preset.
+    // elevationLow:    tooltips, small chips, inline controls.
+    // elevationMedium: dropdowns, popovers, context menus.
+    // elevationHigh:   modals, sheets, drawer overlays.
+    readonly property var elevationLow:    shadowSm
+    readonly property var elevationMedium: shadowMd
+    readonly property var elevationHigh:   shadowLg
 
     readonly property var light: ({
         windowBg: "#f5f5f7",
