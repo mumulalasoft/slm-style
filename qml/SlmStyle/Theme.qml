@@ -150,6 +150,12 @@ QtObject {
     readonly property color notificationCardBackgroundDark: Qt.rgba(30 / 255, 30 / 255, 30 / 255, 0.7)
     readonly property color notificationCardBackground: darkMode ? notificationCardBackgroundDark
                                                                  : notificationCardBackgroundLight
+    readonly property int notificationBannerEnterDuration: Math.max(1, Math.round(220 * _modeScale))
+    readonly property int notificationBannerExitDuration: Math.max(1, Math.round(140 * _modeScale))
+    readonly property int notificationCenterSlideDuration: Math.max(1, Math.round(300 * _modeScale))
+    readonly property int notificationCenterDimDuration: Math.max(1, Math.round(220 * _modeScale))
+    readonly property real notificationBannerEntryOffset: 48
+    readonly property real notificationBannerExitScale: 0.98
 
     readonly property color systemWindowColor: (
         Qt.application && Qt.application.palette
