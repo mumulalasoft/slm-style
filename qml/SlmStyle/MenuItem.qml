@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.impl
 import QtQuick.Templates as T
 import QtQuick.Layouts
 import SlmStyle
@@ -8,8 +9,13 @@ T.MenuItem {
 
     readonly property bool hasSubMenu: !!control.subMenu
     property string iconSource: ""
+    property string fallbackIconSource: ""
     property string secondaryText: ""
     property string shortcutText: ""
+    readonly property string _resolvedPrimaryIconSource: resolvedIconSource()
+    readonly property bool _hasPrimaryIconSource: String(_resolvedPrimaryIconSource || "").length > 0
+    readonly property bool _hasFallbackIconSource: String(fallbackIconSource || "").length > 0
+    readonly property bool _iconSlotVisible: _hasPrimaryIconSource || _hasFallbackIconSource
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
@@ -25,16 +31,83 @@ T.MenuItem {
     font.family: Theme.fontFamilyUi
     font.pixelSize: Theme.fontSize("menu")
 
+    function resolvedIconSource() {
+        var src = String(control.iconSource || "")
+        if (src.length > 0) {
+            return src
+        }
+
+        var iconSrc = String(control.icon.source || "")
+        if (iconSrc.length > 0) {
+            return iconSrc
+        }
+
+        var iconName = String(control.icon.name || "")
+        if (iconName.length > 0) {
+            return "image://themeicon/" + iconName
+        }
+
+        if (control.hasSubMenu && control.subMenu) {
+            var entryIconSrc = String(control.subMenu.entryIconSource || "")
+            if (entryIconSrc.length > 0) {
+                return entryIconSrc
+            }
+            var entryIconName = String(control.subMenu.entryIconName || "")
+            if (entryIconName.length > 0) {
+                return "image://themeicon/" + entryIconName
+            }
+            var subIconSrc = String(control.subMenu.icon.source || "")
+            if (subIconSrc.length > 0) {
+                return subIconSrc
+            }
+            var subIconName = String(control.subMenu.icon.name || "")
+            if (subIconName.length > 0) {
+                return "image://themeicon/" + subIconName
+            }
+        }
+
+        if (control.menu) {
+            var menuEntryIconSrc = String(control.menu.entryIconSource || "")
+            if (menuEntryIconSrc.length > 0) {
+                return menuEntryIconSrc
+            }
+            var menuEntryIconName = String(control.menu.entryIconName || "")
+            if (menuEntryIconName.length > 0) {
+                return "image://themeicon/" + menuEntryIconName
+            }
+            var menuIconSrc = String(control.menu.icon.source || "")
+            if (menuIconSrc.length > 0) {
+                return menuIconSrc
+            }
+            var menuIconName = String(control.menu.icon.name || "")
+            if (menuIconName.length > 0) {
+                return "image://themeicon/" + menuIconName
+            }
+        }
+
+        var label = String(control.text || "")
+        var subTitle = String((control.subMenu && control.subMenu.title) ? control.subMenu.title : "")
+        var menuTitle = String((control.menu && control.menu.title) ? control.menu.title : "")
+        var key = label.length > 0 ? label : (subTitle.length > 0 ? subTitle : menuTitle)
+        if (key === "Recent Applications") {
+            return "qrc:/icons/launchpad.svg"
+        }
+        if (key === "Recent Files") {
+            return "qrc:/icons/logo.svg"
+        }
+        return ""
+    }
+
     contentItem: RowLayout {
         spacing: 6
 
         Item {
             Layout.alignment: Qt.AlignVCenter
-            Layout.preferredWidth: iconImage.visible ? 16 : 0
+            Layout.preferredWidth: (_iconSlotVisible || control.hasSubMenu) ? 16 : 0
             implicitHeight: 16
-            visible: iconImage.visible
+            visible: _iconSlotVisible || control.hasSubMenu
 
-            Image {
+            IconImage {
                 id: iconImage
                 anchors.centerIn: parent
                 width: 16
@@ -42,19 +115,23 @@ T.MenuItem {
                 fillMode: Image.PreserveAspectFit
                 asynchronous: true
                 cache: true
-                visible: String(control.iconSource || "").length > 0
-                         || String(control.icon.name || "").length > 0
-                source: {
-                    var src = String(control.iconSource || "")
-                    if (src.length > 0) {
-                        return src
-                    }
-                    var iconName = String(control.icon.name || "")
-                    if (iconName.length > 0) {
-                        return "image://themeicon/" + iconName
-                    }
-                    return ""
-                }
+                source: control._resolvedPrimaryIconSource
+                visible: control._hasPrimaryIconSource
+                opacity: control.enabled ? 1.0 : 0.5
+            }
+
+            IconImage {
+                id: fallbackIcon
+                anchors.centerIn: parent
+                width: 16
+                height: 16
+                fillMode: Image.PreserveAspectFit
+                asynchronous: true
+                cache: true
+                source: String(control.fallbackIconSource || "")
+                visible: control._hasFallbackIconSource
+                         && (!control._hasPrimaryIconSource || iconImage.status === Image.Error)
+                opacity: control.enabled ? 1.0 : 0.5
             }
         }
 
