@@ -140,6 +140,16 @@ QtObject {
     readonly property int popupWidthS: 288
     readonly property int popupWidthM: 320
     readonly property int popupWidthL: 360
+    // Notification visual spec tokens (locked contract).
+    readonly property real notificationCardRadius: 14
+    readonly property int notificationCardPadding: 14
+    readonly property int notificationCardPaddingMin: 12
+    readonly property int notificationCardPaddingMax: 16
+    readonly property int notificationVerticalRhythm: 8
+    readonly property color notificationCardBackgroundLight: Qt.rgba(1, 1, 1, 0.7)
+    readonly property color notificationCardBackgroundDark: Qt.rgba(30 / 255, 30 / 255, 30 / 255, 0.7)
+    readonly property color notificationCardBackground: darkMode ? notificationCardBackgroundDark
+                                                                 : notificationCardBackgroundLight
 
     readonly property color systemWindowColor: (
         Qt.application && Qt.application.palette
